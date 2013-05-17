@@ -18,6 +18,8 @@ class HostAdmin(admin.ModelAdmin):
                     'RAM',
                     'HDD_all',
                     'HDD_occup',)
+    search_fields = ('name',)
+    ordering = ('name',)
             
 # class BookAdmin(admin.ModelAdmin):
 #     list_display = ('title', 'publisher', 'publication_date')

@@ -6,7 +6,8 @@ class OS(models.Model):
     bit = models.IntegerField(blank=True, null=True)  # 32x or 64
 
     def __unicode__(self):
-        return u'%s x%s' % (self.name, self.bit)
+        if self.bit: self.bit = 'x'+str(self.bit)
+        return u'%s %s' % (self.name, self.bit)
     
 class Database(models.Model):
     name = models.CharField(max_length=20, default="Oracle")  # e.g. Oracle
