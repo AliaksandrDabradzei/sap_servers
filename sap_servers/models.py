@@ -13,7 +13,7 @@ class Database(models.Model):
     version = models.CharField(max_length=20) #11.2.0.3
 
     def __unicode__(self):
-        return self.name
+        return u'%s %s' % (self.name, self.version)
     
 class Location(models.Model):
     location = models.CharField(max_length=20)  # e.g. K1
