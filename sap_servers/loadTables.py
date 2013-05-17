@@ -7,11 +7,18 @@ from xlrd import open_workbook
 from sap_servers.models import OS, Database, Location, Host
 import re
 
+# [u'Servers pool', u'V/H', u'Location', u'SBEA', u'OS', u'Mem', u'Disk space full',
+#              u'Occupied disk space', u'Database', u'Server name', u'Status', u'Landscape',
+#              u'Projects', u'Instance/Service', u'Number', u'Instance Type', u'Product',
+#              u'Specification', u'UC', u'Clients', u'DEV fixed', u'Owner', u'License',
+#              u'License exp.', u'HWU', u'HWU end date']
+
 sheet = open_workbook('c:\Programs\servers.xlsx').sheet_by_index(0)
+first_row = sheet.row_values(0)
 
 def load_oses():  # load OSes to database    
     print 'OS loading'
-    oses = list(set(sheet.col_values(5, 1)))  # list of uniqe OSes
+    oses = list(set(sheet.col_values(first_row.index('OS'), 1)))  # list of uniqe OSes
     OS.objects.all().delete()  
     
     for os in oses:
@@ -37,7 +44,7 @@ def load_oses():  # load OSes to database
          
 def load_dbs():
     print 'Database loading'
-    dbs = list(set(sheet.col_values(9, 1)))  # list of uniqe OSes
+    dbs = list(set(sheet.col_values(first_row.index('Database'), 1)))  # list of uniqe OSes
     Database.objects.all().delete()  # clear Databases
     
     for db in dbs:
@@ -60,7 +67,7 @@ def load_dbs():
 
 def load_locs():     
     print 'Locations loading'
-    locs = list(set(sheet.col_values(3, 1)))  # list of uniqe Locations
+    locs = list(set(sheet.col_values(first_row.index('Location'), 1)))  # list of uniqe Locations
     Location.objects.all().delete() 
     
     for loc in locs:
@@ -75,18 +82,23 @@ def load_locs():
 def load_hosts():
     print 'Hosts loading'
     Host.objects.all().delete() 
-    
+    # [u'Servers pool', u'V/H', u'Location', u'SBEA', u'OS', u'Mem', u'Disk space full',
+#              u'Occupied disk space', u'Database', u'Server name', u'Status', u'Landscape',
+#              u'Projects', u'Instance/Service', u'Number', u'Instance Type', u'Product',
+#              u'Specification', u'UC', u'Clients', u'DEV fixed', u'Owner', u'License',
+#              u'License exp.', u'HWU', u'HWU end date']
+
     for row in range(1, sheet.nrows):
         host = {}
-        host['name'] = sheet.cell(row, 10).value  # Server name
-        host['vn'] = sheet.cell(row, 2).value  # V/H
-        host['sbea'] = sheet.cell(row, 4).value  # SBEA
-        host['ram'] = sheet.cell(row, 6).value  # Mem
-        host['hdd'] = sheet.cell(row, 7).value  # Disk space full
-        host['hdd_occ'] = sheet.cell(row, 8).value  # Occupied disk space        
-        host['loc'] = sheet.cell(row, 3).value.strip() # Location
-        host['os'] = sheet.cell(row, 5).value.strip() # OS
-        host['db'] = sheet.cell(row, 9).value.strip() # Database
+        host['name'] = sheet.cell(row, first_row.index('Server name')).value  # Server name
+        host['vn'] = sheet.cell(row, first_row.index('V/H')).value  # V/H
+        host['sbea'] = sheet.cell(row, first_row.index('SBEA')).value  # SBEA
+        host['ram'] = sheet.cell(row, first_row.index('Mem')).value  # Mem
+        host['hdd'] = sheet.cell(row, first_row.index('Disk space full')).value  # Disk space full
+        host['hdd_occ'] = sheet.cell(row, first_row.index('Occupied disk space')).value  # Occupied disk space
+        host['loc'] = sheet.cell(row, first_row.index('Location')).value.strip()  # Location
+        host['os'] = sheet.cell(row, first_row.index('OS')).value.strip()  # OS
+        host['db'] = sheet.cell(row, first_row.index('Database')).value.strip()  # Database
         
         loc = Location.objects.get(location=host['loc']) 
         
