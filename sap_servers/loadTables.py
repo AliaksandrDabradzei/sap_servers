@@ -3,16 +3,19 @@ Created on May 17, 2013
 
 @author: Aliaksandr_Dabradzei
 '''
-from xlrd import open_workbook, cellname
-# from models import *
-from sap_servers.models import OS
-
+from xlrd import open_workbook, cellname  # @UnusedImport
+from sap_servers.models import OS, Database
+import re
 
 sheet = open_workbook('d:\PROGRAMMING\servers.xls').sheet_by_index(0)
 
+#===================================================
+# OS loading
+#===================================================
+
 print 'OS loading'
 oses = list(set(sheet.col_values(5, 1))) # list of uniqe OSes
-
+OS.objects.all().delete() 
 for os in oses:
     os = os.strip() # clear information
     x = os.find('x') #position of bit number
@@ -24,41 +27,38 @@ for os in oses:
             os_name = os[:x - 3]    #at the end    
     else:
         os_name, bit = os, None
-
+ 
     os = OS(name=str(os_name),
            bit=bit)
     os.save()
-    
+     
 for row in OS.objects.all():
     if OS.objects.filter(name=row.name, bit=row.bit).count() > 1:
         row.delete()
 print 'OS loading finished'
 
+#===================================================
+# Database loading
+#===================================================
 
+print 'Database loading'
+dbs = list(set(sheet.col_values(9, 1))) # list of uniqe OSes
+Database.objects.all().delete() 
+for db in dbs:
+    db = db.strip()
+    x = re.search("\d", db)
+    if x:
+        name = db[:x.start()-1]
+        version = db[x.start():]
+    else:
+        name = db
+        version = None
+    db = Database(name=name,
+                  version=version)
+    db.save()
+   
+for row in Database.objects.all():
+    if Database.objects.filter(name=row.name, version=row.version).count() > 1:
+        row.delete()
+print 'Database loading finished'
 
-# for s in wb.sheets():
-#     print 'Sheet:', s.name
-# #     for row in range(s.nrows):
-# #         values = []
-# #         for col in range(s.ncols):
-# #             values.append(str(s.cell(row,col).value)) 
-# #         print ','.join(values)
-# #         print values
-# #     print
-#     values = []
-#     for row in range(s.nrows):
-#         values.append(str(s.cell(row,10).value)) 
-#         
-#     print values
-
-# sheet = wb.sheet_by_index(0)
-
-# print sheet.name
-
-# for row_index in range(1):
-#     for col_index in range(sheet.ncols):
-#         print cellname(row_index, col_index), '-',
-#         print sheet.cell(row_index, col_index).value
-
-# print sheet.row_values(0,1)
-# print sheet.col(1)
