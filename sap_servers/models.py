@@ -3,14 +3,14 @@ from django.db import models
 # Create your models here.
 class OS(models.Model):
     name = models.CharField(max_length=25, default="WS2008 R2 SE")  # Windows 2008 or others
-    bit = models.IntegerField(default=64)  # 32x or 64
+    bit = models.IntegerField(blank=True, null=True)  # 32x or 64
 
     def __unicode__(self):
         return u'%s x%s' % (self.name, self.bit)
     
 class Database(models.Model):
     name = models.CharField(max_length=20, default="Oracle")  # e.g. Oracle
-    version = models.CharField(max_length=20) #11.2.0.3
+    version = models.CharField(max_length=20, null=True, blank=True) #11.2.0.3
 
     def __unicode__(self):
         return u'%s %s' % (self.name, self.version)
@@ -23,14 +23,14 @@ class Location(models.Model):
 
 class Host(models.Model):    
     name = models.CharField(max_length=20)  # e.g. evbyminsd1904
-    isVirtual = models.BooleanField()  # Virtual or Hard?
-    location = models.ForeignKey(Location)  # e.g. K1-3
-    SBEA = models.BooleanField()
-    OS = models.ForeignKey(OS)
+    isVirtual = models.BooleanField(default=True)  # Virtual or Hard?
+    location = models.ForeignKey(Location, null=True, blank=True)  # e.g. K1-3
+    SBEA = models.BooleanField(default=False)
+    OS = models.ForeignKey(OS, null=True, blank=True)
     RAM = models.IntegerField(default=0)  # in GB
     HDD_all = models.IntegerField(default=0)  # in GB
     HDD_occup = models.IntegerField(default=0)  # in GB
-    database = models.ForeignKey(Database)
+    database = models.ForeignKey(Database, null=True, blank=True)
 
     def __unicode__(self):
         return self.name

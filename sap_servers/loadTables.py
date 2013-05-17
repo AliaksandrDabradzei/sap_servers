@@ -5,22 +5,34 @@ Created on May 17, 2013
 '''
 from xlrd import open_workbook, cellname
 # from models import *
-from SAPServers.models import OS
+from sap_servers.models import OS
 
 
 sheet = open_workbook('d:\PROGRAMMING\servers.xls').sheet_by_index(0)
-sids = []
-# for row in range(sheet.nrows):
-#     sids.append(str(sheet))
-oses = list(set(sheet.col_values(5, 1)))
-for os in oses:
-    os = os.strip()
-    if os[0] == 'x':
-        bit = os[1, 3]
-        print bit
-#     p = OS(
-#            )
 
+print 'OS loading'
+oses = list(set(sheet.col_values(5, 1))) # list of uniqe OSes
+
+for os in oses:
+    os = os.strip() # clear information
+    x = os.find('x') #position of bit number
+    if x != -1: #if bits mentioned
+        bit = int(os[x + 1:x + 3])
+        if x == 0: #at the beggining
+            os_name = os[x + 3:]
+        else:
+            os_name = os[:x - 3]    #at the end    
+    else:
+        os_name, bit = os, None
+
+    os = OS(name=str(os_name),
+           bit=bit)
+    os.save()
+    
+for row in OS.objects.all():
+    if OS.objects.filter(name=row.name, bit=row.bit).count() > 1:
+        row.delete()
+print 'OS loading finished'
 
 
 

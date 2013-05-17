@@ -5,6 +5,9 @@ class OsAdmin(admin.ModelAdmin):
     list_display = ('name', 'bit')
     search_fields = ('name',)
     
+class DatabaseAdmin(admin.ModelAdmin):
+    list_display = ('name', 'version')
+
 class HostAdmin(admin.ModelAdmin):
     list_display = ('name',
                     'OS',
@@ -26,6 +29,6 @@ class HostAdmin(admin.ModelAdmin):
 #     raw_id_fields = ('publisher',)
 # 
 admin.site.register(OS, OsAdmin)
-admin.site.register(Database)
+admin.site.register(Database, DatabaseAdmin)
 admin.site.register(Location)
 admin.site.register(Host, HostAdmin)
