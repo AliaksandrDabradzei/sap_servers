@@ -15,16 +15,16 @@ class Database(models.Model):
     def __unicode__(self):
         return self.name
     
-class Locations(models.Model):
+class Location(models.Model):
     location = models.CharField(max_length=20)  # e.g. K1
     
     def __unicode__(self):
         return self.location
 
-class Hosts(models.Model):    
+class Host(models.Model):    
     name = models.CharField(max_length=20)  # e.g. evbyminsd1904
     isVirtual = models.BooleanField()  # Virtual or Hard?
-    location = models.ForeignKey(Locations)  # e.g. K1-3
+    location = models.ForeignKey(Location)  # e.g. K1-3
     SBEA = models.BooleanField()
     OS = models.ForeignKey(OS)
     RAM = models.IntegerField(default=0)  # in GB
@@ -35,20 +35,20 @@ class Hosts(models.Model):
     def __unicode__(self):
         return self.name
 
-class Projects(models.Model):
+class Project(models.Model):
     name = models.CharField(max_length=10)  # e.g. EPMS-PRTS
 
     def __unicode__(self):
         return self.name
 
-class Products(models.Model):
+class Product(models.Model):
     name = models.CharField(max_length=30)  # e.g. SAP NetWeaver
     version = models.CharField(max_length=20)  # e.g. 7.0
 
     def __unicode__(self):
         return self.name
 
-class Landscapes(models.Model):
+class Landscape(models.Model):
     name = models.CharField(max_length=20)  # e.g. Production
 
     def __unicode__(self):
@@ -60,7 +60,7 @@ class SystemStatus(models.Model):
     def __unicode__(self):
         return self.status
 
-class SystemOwners(models.Model):
+class SystemOwner(models.Model):
     first_name = models.CharField(max_length=20) #Aliaksandr
     last_name = models.CharField(max_length=20)  #Dabradzei    
     email = models.EmailField(blank=True)   #Aliaksandr_Dabradzei@epam.com
@@ -78,32 +78,32 @@ class Instance(models.Model):
     sid = models.CharField(max_length=10) # SM7
     instance_nr = models.IntegerField() # 00
     instance_type = models.ForeignKey(InstanceType) 
-    hosts = models.ManyToManyField(Hosts)
+    hosts = models.ManyToManyField(Host)
 
     def __unicode__(self):
         return self.sid
     
-class Licenses(models.Model):
+class License(models.Model):
     license = models.IntegerField()
     license_exp = models.DateField()
     
     def __unicode__(self):
         return self.license
     
-class Systems(models.Model):
+class System(models.Model):
     name = models.CharField(max_length=20)  # e.g. evbyminsd1904_pi5
     pool = models.CharField(max_length=30)  # e.g. SAP Servers
     isOnline = models.BooleanField(default=False)  # e.g. offline
     status = models.ForeignKey(SystemStatus)
-    landscape = models.ForeignKey(Landscapes)
-    projects = models.ManyToManyField(Projects)
+    landscape = models.ForeignKey(Landscape)
+    projects = models.ManyToManyField(Project)
     instance = models.ForeignKey(Instance)
-    product = models.ManyToManyField(Products)
+    product = models.ManyToManyField(Product)
     specification = models.CharField(max_length=100)  # e.g. based on NW7.0 EHP1
     uc = models.BooleanField(default=False)
     clients = models.CharField(max_length=100, default="000, 001,")  # e.g. 000, 001, 100
-    owner = models.ForeignKey(SystemOwners)  # e.g. "Aleh Mikhniuk"
-    license = models.ForeignKey(Licenses)
+    owner = models.ForeignKey(SystemOwner)  # e.g. "Aleh Mikhniuk"
+    license = models.ForeignKey(License)
     HWU = models.IntegerField()
     HWU_exp = models.DateField()
     
