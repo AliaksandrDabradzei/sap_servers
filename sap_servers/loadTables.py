@@ -7,7 +7,7 @@ from xlrd import open_workbook
 from sap_servers.models import OS, Database, Location, Host
 import re
 
-sheet = open_workbook('d:\PROGRAMMING\servers.xls').sheet_by_index(0)
+sheet = open_workbook('c:\Programs\servers.xlsx').sheet_by_index(0)
 
 def load_oses():  # load OSes to database    
     print 'OS loading'
