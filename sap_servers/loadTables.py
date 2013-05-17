@@ -4,8 +4,16 @@ Created on May 17, 2013
 @author: Aliaksandr_Dabradzei
 '''
 from xlrd import open_workbook, cellname
+from sap_servers.models import *
 
-wb = open_workbook('d:\PROGRAMMING\servers.xls')
+sheet = open_workbook('d:\PROGRAMMING\servers.xls').sheet_by_index(0)
+sids = []
+# for row in range(sheet.nrows):
+#     sids.append(str(sheet))
+print sheet.col_values(0)
+
+
+
 
 # for s in wb.sheets():
 #     print 'Sheet:', s.name
@@ -22,7 +30,7 @@ wb = open_workbook('d:\PROGRAMMING\servers.xls')
 #         
 #     print values
 
-sheet = wb.sheet_by_index(0)
+#sheet = wb.sheet_by_index(0)
 
 #print sheet.name
 
@@ -31,5 +39,5 @@ sheet = wb.sheet_by_index(0)
 #         print cellname(row_index, col_index), '-',
 #         print sheet.cell(row_index, col_index).value
 
-print sheet.row_values(0,1)
+#print sheet.row_values(0,1)
 #print sheet.col(1)
