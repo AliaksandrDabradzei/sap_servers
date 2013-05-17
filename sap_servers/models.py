@@ -23,9 +23,9 @@ class Location(models.Model):
 
 class Host(models.Model):    
     name = models.CharField(max_length=20)  # e.g. evbyminsd1904
-    isVirtual = models.BooleanField(default=True)  # Virtual or Hard?
+    vn = models.CharField(max_length=1, null=True, blank=True)  # Virtual or Hard?
     location = models.ForeignKey(Location, null=True, blank=True)  # e.g. K1-3
-    SBEA = models.BooleanField(default=False)
+    sbea = models.CharField(max_length=1, null=True, blank=True) # Y or N
     OS = models.ForeignKey(OS, null=True, blank=True)
     RAM = models.IntegerField(default=0)  # in GB
     HDD_all = models.IntegerField(default=0)  # in GB

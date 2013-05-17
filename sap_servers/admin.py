@@ -13,8 +13,8 @@ class HostAdmin(admin.ModelAdmin):
                     'OS',
                     'database',
                     'location',
-                    'isVirtual',
-                    'SBEA',
+                    'vn',
+                    'sbea',
                     'RAM',
                     'HDD_all',
                     'HDD_occup',)
