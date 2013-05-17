@@ -48,7 +48,7 @@ def load_dbs():
             version = db[x.start():]
         else:
             name = db
-            version = None
+            version = ''
             
         db = Database(name=name,
                       version=version)
@@ -96,7 +96,7 @@ def load_hosts():
             version = host['db'][x.start():]
         else:
             name = host['db']
-            version = None
+            version = ''
             
         db = Database.objects.get(name=name, version=version)
         
