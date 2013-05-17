@@ -25,7 +25,7 @@ def load_oses():  # load OSes to database
                 os_name = os[:x - 3]        
         else:
             os_name, bit = os, None  # if bits are unknown
-          
+        
         os = OS(name=str(os_name),
                bit=bit)
         os.save()  # load OS to database
@@ -65,7 +65,7 @@ def load_locs():
     
     for loc in locs:
         loc = loc.strip()
-        loc = Location(location=loc)
+        loc = Location(location=str(loc))
         loc.save()
             
     for row in Location.objects.all():

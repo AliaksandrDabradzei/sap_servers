@@ -1,0 +1,26 @@
+<!DOCTYPE HTML PUBLIC HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html lang="en">
+<head>
+    <title>All Hosts</title>
+</head>
+<body>
+    <h1> SAP Systems</h1>
+    <table border="1" bordercolor="red">
+        {% for host in m_list %}
+        <tr>
+            <td>{{ host.name }}</td>
+            <td>{{ host.OS }}</td>
+            <td>{{ host.database }}</td>
+            <td>{{ host.location }}</td>
+            <td>{{ host.vn }}</td>
+            <td>{{ host.sbea }}</td>
+            <td>{{ host.RAM }}</td>
+            <td>{{ host.HDD_all }}</td>
+            <td>{{ host.HDD_occup }}</td>          
+        </tr>
+        {% endfor %}
+    </table>
+    
+    
+</body>
+</html>
