@@ -9,7 +9,6 @@
         {% for host in m_list %}
         <tr>
             <td>{{ host.name }}</td>
-            <!--<td>{% if host.OS %} {{ host.OS }} {% else %} &nbsp; {% endif %}</td></!-->
             <td>{{ host.OS.name }}{% if host.OS.bit %} {{ host.OS.bit }}{% else %}&nbsp;{% endif %}</td>
             <td>{{ host.database }}</td>
             <td>{{ host.location }}</td>
