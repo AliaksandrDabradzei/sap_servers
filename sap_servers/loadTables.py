@@ -296,37 +296,33 @@ def load_instance():
         
         inst_type = InstanceType.objects.get(type=inst_type)
         isSap = inst_type.type in ['ABAP', 'JAVA', 'ABAP+JAVA']
-        for sid in sids:
-                
-            obj = obj_class(sid=sid, 
-                            instance_nr=int(inst_nr or 0),
-                            instance_type=inst_type,
-                            isSap = isSap)
-            obj.save()
-            
-            host = Host.objects.get(name=host)
-            obj.hosts.add(host)
-        
-        
-        
-        
-              
+        if sids != ['']:
+            for sid in sids:
+                    
+                obj = obj_class(sid=sid, 
+                                instance_nr=int(inst_nr or 0),
+                                instance_type=inst_type,
+                                isSap = isSap)
+                obj.save()
+                host = Host.objects.get(name=host)
+                obj.hosts.add(host)
+                             
     for row in obj_class.objects.all():
-        if obj_class.objects.filter(sid=row.sid,hosts=row.hosts,instance_nr=row.instance_nr).count() > 1: row.delete()
+        if obj_class.objects.filter(sid=row.sid,hosts=row.hosts,instance_nr=row.instance_nr, instance_type=row.instance_type).count() > 1: row.delete()
     print text + ' loading finished'
     
 def load_tables():
-#     load_oses()
-#     load_dbs()
-#     load_locs()
-#     load_hosts()
-#     load_proj()
-#     load_inst_type()
-#     load_product()
-#     load_land()
-#     load_status()
-#     load_license()
-#     load_owner()
+    load_oses()
+    load_dbs()
+    load_locs()
+    load_hosts()
+    load_proj()
+    load_inst_type()
+    load_product()
+    load_land()
+    load_status()
+    load_license()
+    load_owner()
     load_instance()
     return
 

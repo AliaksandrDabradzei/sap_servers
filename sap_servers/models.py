@@ -87,11 +87,16 @@ class InstanceType(models.Model):
 class Instance(models.Model):
     text = 'Instance/Service'
     sid = models.CharField(max_length=10) # SM7
-    instance_nr = models.IntegerField(blank=True, null=True) # 00
+    instance_nr = models.CharField(max_length=2, blank=True, null=True) # 00
     instance_type = models.ForeignKey(InstanceType) 
     hosts = models.ManyToManyField(Host)
     isSap = models.BooleanField(default=False)
-
+    
+    def admin_hosts(self):
+        return ', '.join([a.name for a in self.hosts.all()])
+    
+    admin_hosts.short_description = "Hosts"
+    
     def __unicode__(self):
         return self.sid
     

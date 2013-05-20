@@ -35,7 +35,8 @@ class HostAdmin(admin.ModelAdmin):
     ordering = ('name',)
     
 class InstanceAdmin(admin.ModelAdmin):
-    list_display = ('sid', 'instance_nr', 'instance_type')
+    list_display = ('sid', 'instance_nr', 'instance_type', 'admin_hosts')
+    filter_horizontal = ( 'hosts',)
     search_fields = ('sid',)
     ordering = ('-isSap', 'sid')
             
