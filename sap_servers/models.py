@@ -49,7 +49,7 @@ class Project(models.Model):
 class Product(models.Model):
     text = 'Product'
     name = models.CharField(max_length=30)  # e.g. SAP NetWeaver
-    version = models.CharField(max_length=20)  # e.g. 7.0
+    version = models.CharField(max_length=20, null=True, blank=True)  # e.g. 7.0
 
     def __unicode__(self):
         return self.name
@@ -87,17 +87,19 @@ class InstanceType(models.Model):
 class Instance(models.Model):
     text = 'Instance/Service'
     sid = models.CharField(max_length=10) # SM7
-    instance_nr = models.IntegerField() # 00
+    instance_nr = models.IntegerField(blank=True, null=True) # 00
     instance_type = models.ForeignKey(InstanceType) 
     hosts = models.ManyToManyField(Host)
+    isSap = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.sid
     
 class License(models.Model):
     text = 'License'
-    license = models.IntegerField()
-    license_exp = models.DateField()
+    license = models.CharField(max_length=20)
+    license_exp = models.DateField(null=True, blank=True)
+    isTemp = models.BooleanField(default=False)
     
     def __unicode__(self):
         return self.license

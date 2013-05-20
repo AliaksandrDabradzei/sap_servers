@@ -7,8 +7,10 @@ from xlrd import open_workbook
 from sap_servers.models import *  # @UnusedWildImport
 import re
 import sap_servers
+import datetime
 
-#https://www.dropbox.com/s/gktkvc4h5mqy1hf/servers.xls
+
+# https://www.dropbox.com/s/gktkvc4h5mqy1hf/servers.xls
 sheet = open_workbook('d:\PROGRAMMING\servers.xls').sheet_by_index(0)
 first_row = sheet.row_values(0)
 # [u'Servers pool', u'V/H', u'Location', u'SBEA', u'OS', u'Mem', u'Disk space full', u'Occupied disk space', u'Database', u'Server name', u'Status', u'Landscape',
@@ -54,7 +56,7 @@ def load_oses():  # load OSes to database
         
     print 'OS loading finished' 
          
-def load_dbs():     # load Databases to database
+def load_dbs():  # load Databases to database
     print 'Database loading'
     dbs = list(set(sheet.col_values(first_row.index('Database'), 1)))  # list of uniqe OSes
     Database.objects.all().delete()  # clear Databases
@@ -91,7 +93,7 @@ def load_locs():  # load Locations to database
         if Location.objects.filter(location=row.location).count() > 1: row.delete()
     print 'Locations loading finished'
 
-def load_hosts(): # load Hosts to database
+def load_hosts():  # load Hosts to database
     print 'Hosts loading'
     Host.objects.all().delete() 
 
@@ -148,27 +150,184 @@ def load_hosts(): # load Hosts to database
     print 'Hosts loading finished'
 
 def load_proj():
-    print 'Projects loading'
-    objs = list(set(sheet.col_values(first_row.index('Projects'), 1)))  # list of uniqe Locations
-    Project.objects.all().delete() 
+    text = Project.text
+    obj_class = Project
+    print text + ' loading'
+    objs = list(set(sheet.col_values(first_row.index(text), 1)))  # list of uniqe Projects
+    obj_class.objects.all().delete() 
+
+    for obj1 in objs:
+        obj1 = obj1.strip().split(',')
+        for obj in obj1:
+            obj = obj_class(name=str(obj))
+            obj.save()
+
+            
+    for row in obj_class.objects.all():
+        if obj_class.objects.filter(name=row.name).count() > 1: row.delete()
+    print text + 's loading finished'
+    
+def load_inst_type():
+    text = InstanceType.text
+    obj_class = InstanceType
+    print text + 's loading'
+    objs = list(set(sheet.col_values(first_row.index(text), 1)))  # list of uniqe Inst Types
+    obj_class.objects.all().delete() 
 
     for obj in objs:
-        obj = obj.strip().split(',')
-        for obj1 in obj:
-            obj = Project(name=str(obj1))
+        obj = obj.strip()
+        obj = obj_class(type=str(obj))
+        obj.save()
+            
+    for row in obj_class.objects.all():
+        if obj_class.objects.filter(type=row.type).count() > 1: row.delete()
+    print text + ' loading finished'
+
+def load_product():
+    text = Product.text
+    obj_class = Product
+    print text + 's loading'
+    objs = list(set(sheet.col_values(first_row.index(text), 1)))  # list of uniqe Inst Types
+    obj_class.objects.all().delete() 
+
+    for obj1 in objs:
+        obj1 = obj1.strip().split(',')
+        for obj in obj1:
+            obj = obj.strip()
+            x = re.search('\d(?<!R/3).*', obj)
+            if x:
+                name = obj[:x.start()]
+                version = x.group()
+            else:
+                name = obj
+                version = ''
+            obj = obj_class(name=name,version=version)
             obj.save()
             
-    for row in Project.objects.all():
-        if Project.objects.filter(name=row.name).count() > 1: row.delete()
-    print 'Projects loading finished'
+    for row in obj_class.objects.all():
+        if obj_class.objects.filter(name=row.name, version=row.version).count() > 1: row.delete()
+    print text + ' loading finished'
 
+def load_land():
+    text = Landscape.text
+    obj_class = Landscape
+    print text + 's loading'
+    objs = list(set(sheet.col_values(first_row.index(text), 1)))  # list of uniqe Inst Types
+    obj_class.objects.all().delete() 
 
+    for obj in objs:
+        obj = obj.strip()
+        obj = obj_class(name=str(obj))
+        obj.save()
+            
+    for row in obj_class.objects.all():
+        if obj_class.objects.filter(name=row.name).count() > 1: row.delete()
+    print text + ' loading finished'
+    
+def load_status():
+    text = SystemStatus.text
+    obj_class = SystemStatus
+    print text + 's loading'
+    objs = list(set(sheet.col_values(first_row.index(text), 1)))  # list of uniqe Inst Types
+    obj_class.objects.all().delete() 
+
+    for obj in objs:
+        obj = obj.strip()
+        obj = obj_class(status=str(obj))
+        obj.save()
+            
+    for row in obj_class.objects.all():
+        if obj_class.objects.filter(status=row.status).count() > 1: row.delete()
+    print text + ' loading finished'
+
+def load_license():
+    text = License.text
+    obj_class = License
+    print text + 's loading'
+    obj_class.objects.all().delete() 
+    for row in range(1, sheet.nrows):
+        name = sheet.cell(row, first_row.index('License')).value  # Server name
+        exp = sheet.cell(row, first_row.index('License exp.')).value  # V/H
+        if type(exp) == float:
+            exp =  datetime.datetime(1899, 12, 30) + datetime.timedelta(days=exp)
+            isTemp = False
+        else:
+            exp = None
+            isTemp = True
+        obj = obj_class(license=name,license_exp=exp,isTemp=isTemp)
+        obj.save()
+             
+    for row in obj_class.objects.all():
+        if obj_class.objects.filter(license=row.license, license_exp=row.license_exp, isTemp=row.isTemp).count() > 1: row.delete()
+    print text + ' loading finished'
+
+def load_owner():
+    text = SystemOwner.text
+    obj_class = SystemOwner
+    print text + 's loading'
+    objs = list(set(sheet.col_values(first_row.index(text), 1)))  # list of uniqe Inst Types
+    obj_class.objects.all().delete() 
+
+    for obj in objs:
+        obj = obj.strip().split(' ')
+        if obj != ['']:
+            first_name = obj[0]
+            last_name = obj[1]
+            email = obj[0]+'_'+obj[1]+'@epam.com'
+        else:
+            first_name, last_name, email = None, None, ''
+        obj = obj_class(first_name=str(first_name),last_name=str(last_name),email=email)
+        obj.save()
+            
+    for row in obj_class.objects.all():
+        if obj_class.objects.filter(first_name=row.first_name,last_name=row.last_name).count() > 1: row.delete()
+    print text + ' loading finished'
+
+def load_instance():
+    text = Instance.text
+    obj_class = Instance
+    print text + 's loading'
+    obj_class.objects.all().delete() 
+    for row in range(1, sheet.nrows):
+        sids = sheet.cell(row, first_row.index('Instance/Service')).value.split(',')  # Server name
+        inst_nr = sheet.cell(row, first_row.index('Number')).value  # V/H
+        inst_type = sheet.cell(row, first_row.index('Instance Type')).value
+        host = sheet.cell(row, first_row.index('Server name')).value
+        
+        inst_type = InstanceType.objects.get(type=inst_type)
+        isSap = inst_type.type in ['ABAP', 'JAVA', 'ABAP+JAVA']
+        for sid in sids:
+                
+            obj = obj_class(sid=sid, 
+                            instance_nr=int(inst_nr or 0),
+                            instance_type=inst_type,
+                            isSap = isSap)
+            obj.save()
+            
+            host = Host.objects.get(name=host)
+            obj.hosts.add(host)
+        
+        
+        
+        
+              
+    for row in obj_class.objects.all():
+        if obj_class.objects.filter(sid=row.sid,hosts=row.hosts,instance_nr=row.instance_nr).count() > 1: row.delete()
+    print text + ' loading finished'
+    
 def load_tables():
-    load_oses()
-    load_dbs()
-    load_locs()
-    load_hosts()
-    load_proj()
+#     load_oses()
+#     load_dbs()
+#     load_locs()
+#     load_hosts()
+#     load_proj()
+#     load_inst_type()
+#     load_product()
+#     load_land()
+#     load_status()
+#     load_license()
+#     load_owner()
+    load_instance()
     return
 
 load_tables()

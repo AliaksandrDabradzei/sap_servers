@@ -11,6 +11,15 @@ class OSAdmin(admin.ModelAdmin):
     
 class DatabaseAdmin(admin.ModelAdmin):
     list_display = ('name', 'version')
+    
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('name', 'version')
+    
+class LicenseAdmin(admin.ModelAdmin):
+    list_display = ('license','license_exp','isTemp')
+
+class SystemOwnerAdmin(admin.ModelAdmin):
+    list_display = ('email',)
 
 class HostAdmin(admin.ModelAdmin):
     list_display = ('name',
@@ -24,6 +33,11 @@ class HostAdmin(admin.ModelAdmin):
                     'HDD_occup',)
     search_fields = ('name',)
     ordering = ('name',)
+    
+class InstanceAdmin(admin.ModelAdmin):
+    list_display = ('sid', 'instance_nr', 'instance_type')
+    search_fields = ('sid',)
+    ordering = ('-isSap', 'sid')
             
 for name, obj in inspect.getmembers(models): # for all classes in models
     if inspect.isclass(obj):
