@@ -21,3 +21,11 @@ Another way to test that 1 + 1 is equal to 2.
 True
 """}
 
+# import inspect
+# import sap_servers.models
+# 
+# for name, obj in inspect.getmembers(sap_servers.models):
+#     if inspect.isclass(obj):
+#         print obj
+#     
+# print sap_servers.models.OS.text

@@ -4,16 +4,29 @@ Created on May 17, 2013
 @author: Aliaksandr_Dabradzei
 '''
 from xlrd import open_workbook  
-from sap_servers.models import OS, Database, Location, Host, Project
+from sap_servers.models import *  # @UnusedWildImport
 import re
+import sap_servers
+
 #https://www.dropbox.com/s/gktkvc4h5mqy1hf/servers.xls
 sheet = open_workbook('d:\PROGRAMMING\servers.xls').sheet_by_index(0)
 first_row = sheet.row_values(0)
-# [u'Servers pool', u'V/H', u'Location', u'SBEA', u'OS', u'Mem', u'Disk space full',
-#              u'Occupied disk space', u'Database', u'Server name', u'Status', u'Landscape',
-#              u'Projects', u'Instance/Service', u'Number', u'Instance Type', u'Product',
-#              u'Specification', u'UC', u'Clients', u'DEV fixed', u'Owner', u'License',
-#              u'License exp.', u'HWU', u'HWU end date']
+# [u'Servers pool', u'V/H', u'Location', u'SBEA', u'OS', u'Mem', u'Disk space full', u'Occupied disk space', u'Database', u'Server name', u'Status', u'Landscape',
+# u'Projects', u'Instance/Service', u'Number', u'Instance Type', u'Product', u'Specification', u'UC', u'Clients', u'DEV fixed', u'Owner', u'License', u'License exp.',
+# u'HWU', u'HWU end date']
+
+import inspect
+COLUMNS = {''}
+objes = []
+for name, obj in inspect.getmembers(sap_servers.models):
+    if inspect.isclass(obj):
+        objes.append(obj)
+#  [<class 'sap_servers.models.Database'>, <class 'sap_servers.models.Host'>, <class 'sap_servers.models.Instance'>, <class 'sap_servers.models.InstanceType'>, 
+# <class 'sap_servers.models.Landscape'>, <class 'sap_servers.models.License'>, <class 'sap_servers.models.Location'>, <class 'sap_servers.models.OS'>, 
+# <class 'sap_servers.models.Product'>, <class 'sap_servers.models.Project'>, <class 'sap_servers.models.System'>, <class 'sap_servers.models.SystemOwner'>, 
+# <class 'sap_servers.models.SystemStatus'>]
+
+
 
 def load_oses():  # load OSes to database    
     print 'OS loading'
@@ -140,9 +153,10 @@ def load_proj():
     Project.objects.all().delete() 
 
     for obj in objs:
-        obj = obj.strip()
-        obj = Project(name=str(obj))
-        obj.save()
+        obj = obj.strip().split(',')
+        for obj1 in obj:
+            obj = Project(name=str(obj1))
+            obj.save()
             
     for row in Project.objects.all():
         if Project.objects.filter(name=row.name).count() > 1: row.delete()
@@ -154,6 +168,7 @@ def load_tables():
     load_dbs()
     load_locs()
     load_hosts()
+    load_proj()
     return
 
 load_tables()
