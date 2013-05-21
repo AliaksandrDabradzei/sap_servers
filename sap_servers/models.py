@@ -24,6 +24,13 @@ class Location(models.Model):
     def __unicode__(self):
         return self.location
 
+class ServerPool(models.Model):
+    text = 'Servers pool'
+    name = models.CharField(max_length=30)
+    
+    def __unicode__(self):
+        return self.name
+
 class Host(models.Model):    
     text = 'Server name'
     name = models.CharField(max_length=20)  # e.g. evbyminsd1904
@@ -35,7 +42,8 @@ class Host(models.Model):
     HDD_all = models.IntegerField(default=0)  # in GB
     HDD_occup = models.IntegerField(default=0)  # in GB
     database = models.ForeignKey(Database, null=True, blank=True)
-
+    pool = models.ForeignKey(ServerPool)
+    
     def __unicode__(self):
         return self.name
 
@@ -108,23 +116,50 @@ class License(models.Model):
     
     def __unicode__(self):
         return self.license
+
+class HWU(models.Model):
+    text = "HWU"
+    name = models.IntegerField()
+    hwu_exp = models.DateField(null=True, blank=True)
     
+    def __unicode__(self):
+        return str(self.name)
+   
 class System(models.Model):
-    name = models.CharField(max_length=20)  # e.g. evbyminsd1904_pi5
-    pool = models.CharField(max_length=30)  # e.g. SAP Servers
+    name = models.CharField(max_length=30)  # e.g. evbyminsd1904_pi5
     isOnline = models.BooleanField(default=False)  # e.g. offline
     status = models.ForeignKey(SystemStatus)
-    landscape = models.ForeignKey(Landscape)
+    landscape = models.ForeignKey(Landscape, blank=True)
     projects = models.ManyToManyField(Project)
-    instance = models.ForeignKey(Instance)
+    instance = models.ManyToManyField(Instance)
     product = models.ManyToManyField(Product)
-    specification = models.CharField(max_length=100)  # e.g. based on NW7.0 EHP1
+    specification = models.CharField(max_length=100,null=True, blank=True)  # e.g. based on NW7.0 EHP1
     uc = models.BooleanField(default=False)
-    clients = models.CharField(max_length=100, default="000, 001,")  # e.g. 000, 001, 100
+    clients = models.CharField(max_length=100, default="000, 001,", null=True, blank=True)  # e.g. 000, 001, 100
     owner = models.ForeignKey(SystemOwner)  # e.g. "Aleh Mikhniuk"
     license = models.ForeignKey(License)
-    HWU = models.IntegerField()
-    HWU_exp = models.DateField()
+    HWU = models.ManyToManyField(HWU, null=True)
+    
+    def admin_projects(self):
+        return ', '.join([a.name for a in self.projects.all()])
+    
+    admin_projects.short_description = "Projects"
+    
+    def admin_instances(self):
+        return ', '.join([a.sid for a in self.instance.all()])
+    
+    admin_instances.short_description = "Instances"
+    
+    def admin_products(self):
+        return ', '.join([a.name for a in self.product.all()])
+    
+    admin_products.short_description = "Products"
+    
+    def admin_hwus(self):
+        return ', '.join([a.name for a in self.HWU.all()])
+    
+    admin_hwus.short_description = "HWUs"
+    
     
     def __unicode__(self):
         return self.name

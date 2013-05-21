@@ -8,17 +8,18 @@ from sap_servers.models import *  # @UnusedWildImport
 import re
 import sap_servers
 import datetime
+import _mysql_exceptions
 
 
 # https://www.dropbox.com/s/gktkvc4h5mqy1hf/servers.xls
 sheet = open_workbook('d:\PROGRAMMING\servers.xls').sheet_by_index(0)
 first_row = sheet.row_values(0)
+print first_row
 # [u'Servers pool', u'V/H', u'Location', u'SBEA', u'OS', u'Mem', u'Disk space full', u'Occupied disk space', u'Database', u'Server name', u'Status', u'Landscape',
 # u'Projects', u'Instance/Service', u'Number', u'Instance Type', u'Product', u'Specification', u'UC', u'Clients', u'DEV fixed', u'Owner', u'License', u'License exp.',
 # u'HWU', u'HWU end date']
 
 import inspect
-COLUMNS = {''}
 objes = []
 for name, obj in inspect.getmembers(sap_servers.models):
     if inspect.isclass(obj):
@@ -28,7 +29,20 @@ for name, obj in inspect.getmembers(sap_servers.models):
 # <class 'sap_servers.models.Product'>, <class 'sap_servers.models.Project'>, <class 'sap_servers.models.System'>, <class 'sap_servers.models.SystemOwner'>, 
 # <class 'sap_servers.models.SystemStatus'>]
 
-
+def load_tables2():
+    print 'Tables loading'
+    for row in range(1, 3):
+        system = {}
+        for col in range(sheet.ncols):
+            system[first_row[col]] = sheet.cell(row, col).value
+            print first_row[col], ':', system[first_row[col]], '    ',
+        print
+        
+    for obj in objes:
+        obj.objects.all().delete()
+            
+# load_tables2()           
+            
 
 def load_oses():  # load OSes to database    
     print 'OS loading'
@@ -93,6 +107,22 @@ def load_locs():  # load Locations to database
         if Location.objects.filter(location=row.location).count() > 1: row.delete()
     print 'Locations loading finished'
 
+def load_pools():
+    text = ServerPool.text
+    obj_class = ServerPool
+    print text + 's loading'
+    objs = list(set(sheet.col_values(first_row.index(text), 1)))  # list of uniqe Inst Types
+    obj_class.objects.all().delete() 
+
+    for obj in objs:
+        obj = obj.strip()
+        obj = obj_class(name=str(obj))
+        obj.save()
+            
+    for row in obj_class.objects.all():
+        if obj_class.objects.filter(name=row.name).count() > 1: row.delete()
+    print text + ' loading finished'
+    
 def load_hosts():  # load Hosts to database
     print 'Hosts loading'
     Host.objects.all().delete() 
@@ -108,6 +138,7 @@ def load_hosts():  # load Hosts to database
         host['loc'] = sheet.cell(row, first_row.index('Location')).value.strip()  # Location
         host['os'] = sheet.cell(row, first_row.index('OS')).value.strip()  # OS
         host['db'] = sheet.cell(row, first_row.index('Database')).value.strip()  # Database
+        host['pool'] = sheet.cell(row, first_row.index('Servers pool')).value.strip()
         
         loc = Location.objects.get(location=host['loc']) 
         
@@ -120,6 +151,7 @@ def load_hosts():  # load Hosts to database
             version = ''
             
         db = Database.objects.get(name=name, version=version)
+        pool = ServerPool.objects.get(name=host['pool'])
         
         x = host['os'].find('x') 
         if x != -1: 
@@ -141,7 +173,8 @@ def load_hosts():  # load Hosts to database
                    HDD_occup=int(host['hdd_occ'] or 0),
                    location=loc,
                    database=db,
-                   OS=os)
+                   OS=os,
+                   pool=pool)
         hos.save()
     
     for row in Host.objects.all():
@@ -201,7 +234,7 @@ def load_product():
             else:
                 name = obj
                 version = ''
-            obj = obj_class(name=name,version=version)
+            obj = obj_class(name=name, version=version)
             obj.save()
             
     for row in obj_class.objects.all():
@@ -249,12 +282,12 @@ def load_license():
         name = sheet.cell(row, first_row.index('License')).value  # Server name
         exp = sheet.cell(row, first_row.index('License exp.')).value  # V/H
         if type(exp) == float:
-            exp =  datetime.datetime(1899, 12, 30) + datetime.timedelta(days=exp)
+            exp = datetime.datetime(1899, 12, 30) + datetime.timedelta(days=exp)
             isTemp = False
         else:
             exp = None
             isTemp = True
-        obj = obj_class(license=name,license_exp=exp,isTemp=isTemp)
+        obj = obj_class(license=name, license_exp=exp, isTemp=isTemp)
         obj.save()
              
     for row in obj_class.objects.all():
@@ -273,14 +306,14 @@ def load_owner():
         if obj != ['']:
             first_name = obj[0]
             last_name = obj[1]
-            email = obj[0]+'_'+obj[1]+'@epam.com'
+            email = obj[0] + '_' + obj[1] + '@epam.com'
         else:
             first_name, last_name, email = None, None, ''
-        obj = obj_class(first_name=str(first_name),last_name=str(last_name),email=email)
+        obj = obj_class(first_name=str(first_name), last_name=str(last_name), email=email)
         obj.save()
             
     for row in obj_class.objects.all():
-        if obj_class.objects.filter(first_name=row.first_name,last_name=row.last_name).count() > 1: row.delete()
+        if obj_class.objects.filter(first_name=row.first_name, last_name=row.last_name).count() > 1: row.delete()
     print text + ' loading finished'
 
 def load_instance():
@@ -290,8 +323,9 @@ def load_instance():
     obj_class.objects.all().delete() 
     for row in range(1, sheet.nrows):
         sids = sheet.cell(row, first_row.index('Instance/Service')).value.split(',')  # Server name
-        inst_nr = sheet.cell(row, first_row.index('Number')).value  # V/H
+        inst_nr = str(sheet.cell(row, first_row.index('Number')).value)  # V/H
         inst_type = sheet.cell(row, first_row.index('Instance Type')).value
+        if len(inst_nr) == 1 : inst_type = '0'+inst_type
         host = sheet.cell(row, first_row.index('Server name')).value
         
         inst_type = InstanceType.objects.get(type=inst_type)
@@ -299,22 +333,103 @@ def load_instance():
         if sids != ['']:
             for sid in sids:
                     
-                obj = obj_class(sid=sid, 
+                obj = obj_class(sid=sid,
                                 instance_nr=int(inst_nr or 0),
                                 instance_type=inst_type,
-                                isSap = isSap)
+                                isSap=isSap)
                 obj.save()
                 host = Host.objects.get(name=host)
                 obj.hosts.add(host)
                              
     for row in obj_class.objects.all():
-        if obj_class.objects.filter(sid=row.sid,hosts=row.hosts,instance_nr=row.instance_nr, instance_type=row.instance_type).count() > 1: row.delete()
+        if obj_class.objects.filter(sid=row.sid, hosts=row.hosts, instance_nr=row.instance_nr, instance_type=row.instance_type).count() > 1: row.delete()
     print text + ' loading finished'
+ 
+def load_hwu():
+    text = HWU.text
+    obj_class = HWU
+    print text + 's loading'
+    obj_class.objects.all().delete() 
+    for row in range(1, sheet.nrows):
+        names = re.findall(r"[\w']+", str(sheet.cell(row, first_row.index('HWU')).value))
+        exp = sheet.cell(row, first_row.index('HWU end date')).value  # V/H
+        if type(exp) == float:
+            exp = datetime.datetime(1899, 12, 30) + datetime.timedelta(days=exp)
+        else:
+            exp = None
+        for name in names:
+            if name != '0':
+                obj = obj_class(name=name, hwu_exp=exp)
+                obj.save()
+             
     
+    for row in obj_class.objects.all():
+        if obj_class.objects.filter(name=row.name, hwu_exp=row.hwu_exp).count() > 1: row.delete()
+    print text + ' loading finished'
+       
+def load_system():
+    print 'Systems loading'
+    System.objects.all().delete() 
+    for row in range(1, sheet.nrows):
+        systems = {}
+        row_vals = sheet.row_values(row)
+        systems['name'] = row_vals[first_row.index('Server name')] + '_' + row_vals[first_row.index('Instance/Service')]
+        systems['isOnline'] = row_vals[first_row.index('Status')] == 'online'
+        status = row_vals[first_row.index('Status')]
+        systems['status'] = SystemStatus.objects.get(status=status)
+        landscape = row_vals[first_row.index('Landscape')]
+        systems['landscape'] = Landscape.objects.get(name=landscape)
+        systems['specification'] = row_vals[first_row.index('Specification')]
+        systems['uc'] = row_vals[first_row.index('UC')] == "Yes"
+        systems['clients'] = row_vals[first_row.index('Clients')]
+        owner = row_vals[first_row.index('Owner')]
+        if owner != '':
+            r = re.match(r"(\w+) (\w+)", owner)
+            owner = r.group(1) + '_' + r.group(2) + "@epam.com" 
+        systems['owner'] = SystemOwner.objects.get(email=owner)              
+        license_name = row_vals[first_row.index('License')]
+        license_exp = row_vals[first_row.index('License exp.')]  
+        if type(license_exp) == float:
+            license_exp = datetime.datetime(1899, 12, 30) + datetime.timedelta(days=license_exp)
+        else:
+            license_exp = None    
+        systems['license'] = License.objects.get(license=license_name, license_exp=license_exp)
+        
+        system = System(name=systems['name'],
+                        isOnline=systems['isOnline'],
+                        status=systems['status'],
+                        landscape=systems['landscape'],
+                        # projects=,
+                        # instance=systems['instance'],
+                        # product=systems['product'],
+                        specification=systems['specification'],
+                        uc=systems['uc'],
+                        clients=systems['clients'],
+                        owner=systems['owner'],
+                        license=systems['license'])
+                        #HWU=systems['HWU'])
+        system.save()
+        
+        
+        host = Host.objects.get(name=host)
+                obj.hosts.add(host)
+        
+                    
+    print 'Systems loading finished'
+
+                        
+                        
+                        
+                        
+        
+        
+
+
 def load_tables():
     load_oses()
     load_dbs()
     load_locs()
+    load_pools()
     load_hosts()
     load_proj()
     load_inst_type()
@@ -324,6 +439,8 @@ def load_tables():
     load_license()
     load_owner()
     load_instance()
+    load_hwu()
+    load_system()
     return
 
 load_tables()

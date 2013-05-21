@@ -39,6 +39,13 @@ class InstanceAdmin(admin.ModelAdmin):
     filter_horizontal = ( 'hosts',)
     search_fields = ('sid',)
     ordering = ('-isSap', 'sid')
+    
+class HWUAdmin(admin.ModelAdmin):
+    list_display = ('name', 'hwu_exp')
+    
+class SystemAdmin(admin.ModelAdmin):
+    list_display = ('name', 'isOnline', 'status', 'landscape', 'specification', 'uc', 'clients', 'owner', 'license', "admin_projects", "admin_instances", "admin_products", "admin_hwus")
+    filter_horizontal = ( 'projects', 'instance', 'product', 'HWU')
             
 for name, obj in inspect.getmembers(models): # for all classes in models
     if inspect.isclass(obj):
