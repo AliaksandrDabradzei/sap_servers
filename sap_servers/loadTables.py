@@ -8,13 +8,12 @@ from sap_servers.models import *  # @UnusedWildImport
 import re
 import sap_servers
 import datetime
-import _mysql_exceptions
+import sys
 
 
 # https://www.dropbox.com/s/gktkvc4h5mqy1hf/servers.xls
 sheet = open_workbook('d:\PROGRAMMING\servers.xls').sheet_by_index(0)
 first_row = sheet.row_values(0)
-print first_row
 # [u'Servers pool', u'V/H', u'Location', u'SBEA', u'OS', u'Mem', u'Disk space full', u'Occupied disk space', u'Database', u'Server name', u'Status', u'Landscape',
 # u'Projects', u'Instance/Service', u'Number', u'Instance Type', u'Product', u'Specification', u'UC', u'Clients', u'DEV fixed', u'Owner', u'License', u'License exp.',
 # u'HWU', u'HWU end date']
@@ -28,21 +27,6 @@ for name, obj in inspect.getmembers(sap_servers.models):
 # <class 'sap_servers.models.Landscape'>, <class 'sap_servers.models.License'>, <class 'sap_servers.models.Location'>, <class 'sap_servers.models.OS'>, 
 # <class 'sap_servers.models.Product'>, <class 'sap_servers.models.Project'>, <class 'sap_servers.models.System'>, <class 'sap_servers.models.SystemOwner'>, 
 # <class 'sap_servers.models.SystemStatus'>]
-
-def load_tables2():
-    print 'Tables loading'
-    for row in range(1, 3):
-        system = {}
-        for col in range(sheet.ncols):
-            system[first_row[col]] = sheet.cell(row, col).value
-            print first_row[col], ':', system[first_row[col]], '    ',
-        print
-        
-    for obj in objes:
-        obj.objects.all().delete()
-            
-# load_tables2()           
-            
 
 def load_oses():  # load OSes to database    
     print 'OS loading'
@@ -373,7 +357,10 @@ def load_system():
     for row in range(1, sheet.nrows):
         systems = {}
         row_vals = sheet.row_values(row)
-        systems['name'] = row_vals[first_row.index('Server name')] + '_' + row_vals[first_row.index('Instance/Service')]
+        sid = row_vals[first_row.index('Instance/Service')]
+        systems['name'] = row_vals[first_row.index('Server name')]
+        if sid != '':
+            systems['name'] += '_'+sid
         systems['isOnline'] = row_vals[first_row.index('Status')] == 'online'
         status = row_vals[first_row.index('Status')]
         systems['status'] = SystemStatus.objects.get(status=status)
@@ -410,9 +397,38 @@ def load_system():
                         #HWU=systems['HWU'])
         system.save()
         
+        systems['project'] = row_vals[first_row.index('Projects')]
+        systems['inst'] = row_vals[first_row.index('Instance/Service')]
+        systems['prod'] = row_vals[first_row.index('Product')]
+        systems['hwu'] = row_vals[first_row.index('HWU')]
+       
+        try:
+            project = Project.objects.get(name=systems['project'])
+            system.projects.add(project)
+            inst = Instance.objects.get(sid=systems['inst'])
+            system.instance.add(inst)
+            #prod = Product.objects.get(name=systems['prod'])
+            
+            for obj in systems['prod'].split(','):
+                obj = obj.strip()
+                x = re.search('\d(?<!R/3).*', obj)
+                if x:
+                    name = obj[:x.start()]
+                    version = x.group()
+                else:
+                    name = obj
+                    version = ''
+                prod = Product.objects.get(name=name, version=version)
+                system.product.add(prod)
+            if type(systems['prod']) == int:
+                hwu = HWU.objects.get(name=systems['hwu'])
+                system.HWU.add(hwu)
+        except:
+            print "error:", sys.exc_info()[0]
+            print 'project:', systems['project'], 'inst:', systems['inst'], 'prod:', systems['prod'], 'hwu:',systems['hwu'] 
         
-        host = Host.objects.get(name=host)
-                obj.hosts.add(host)
+        
+        
         
                     
     print 'Systems loading finished'
@@ -426,20 +442,20 @@ def load_system():
 
 
 def load_tables():
-    load_oses()
-    load_dbs()
-    load_locs()
-    load_pools()
-    load_hosts()
-    load_proj()
-    load_inst_type()
-    load_product()
-    load_land()
-    load_status()
-    load_license()
-    load_owner()
-    load_instance()
-    load_hwu()
+#     load_oses()
+#     load_dbs()
+#     load_locs()
+#     load_pools()
+#     load_hosts()
+#     load_proj()
+#     load_inst_type()
+#     load_product()
+#     load_land()
+#     load_status()
+#     load_license()
+#     load_owner()
+#     load_instance()
+#     load_hwu()
     load_system()
     return
 

@@ -7,19 +7,28 @@ import inspect
 
 class OSAdmin(admin.ModelAdmin):
     list_display = ('name', 'bit')
-    search_fields = ('name',)
+    ordering = ('name',)
     
 class DatabaseAdmin(admin.ModelAdmin):
     list_display = ('name', 'version')
+    ordering = ('name',)
     
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'version')
+    ordering = ('name',)
+    search_fields = ('name',)
+    
+class ProjectAdmin(admin.ModelAdmin):
+    ordering = ('name',)
+    search_fields = ('name',)
     
 class LicenseAdmin(admin.ModelAdmin):
     list_display = ('license','license_exp','isTemp')
 
 class SystemOwnerAdmin(admin.ModelAdmin):
-    list_display = ('email',)
+    list_display = ('email','first_name','last_name',)
+    search_fields = ('last_name','first_name',)
+    ordering = ('email',)
 
 class HostAdmin(admin.ModelAdmin):
     list_display = ('name',
@@ -38,10 +47,11 @@ class InstanceAdmin(admin.ModelAdmin):
     list_display = ('sid', 'instance_nr', 'instance_type', 'admin_hosts')
     filter_horizontal = ( 'hosts',)
     search_fields = ('sid',)
-    ordering = ('-isSap', 'sid')
+    ordering = ('sid','-isSap', )
     
 class HWUAdmin(admin.ModelAdmin):
     list_display = ('name', 'hwu_exp')
+    ordering = ('name',)
     
 class SystemAdmin(admin.ModelAdmin):
     list_display = ('name', 'isOnline', 'status', 'landscape', 'specification', 'uc', 'clients', 'owner', 'license', "admin_projects", "admin_instances", "admin_products", "admin_hwus")

@@ -31,22 +31,6 @@ class ServerPool(models.Model):
     def __unicode__(self):
         return self.name
 
-class Host(models.Model):    
-    text = 'Server name'
-    name = models.CharField(max_length=20)  # e.g. evbyminsd1904
-    vn = models.CharField(max_length=1, null=True, blank=True)  # Virtual or Hard?
-    location = models.ForeignKey(Location, null=True, blank=True)  # e.g. K1-3
-    sbea = models.CharField(max_length=1, null=True, blank=True) # Y or N
-    OS = models.ForeignKey(OS, null=True, blank=True)
-    RAM = models.IntegerField(default=0)  # in GB
-    HDD_all = models.IntegerField(default=0)  # in GB
-    HDD_occup = models.IntegerField(default=0)  # in GB
-    database = models.ForeignKey(Database, null=True, blank=True)
-    pool = models.ForeignKey(ServerPool)
-    
-    def __unicode__(self):
-        return self.name
-
 class Project(models.Model):
     text = 'Projects'
     name = models.CharField(max_length=10)  # e.g. EPMS-PRTS
@@ -60,7 +44,7 @@ class Product(models.Model):
     version = models.CharField(max_length=20, null=True, blank=True)  # e.g. 7.0
 
     def __unicode__(self):
-        return self.name
+        return self.name+' '+self.version
 
 class Landscape(models.Model):
     text = 'Landscape'
@@ -91,22 +75,6 @@ class InstanceType(models.Model):
 
     def __unicode__(self):
         return self.type
-
-class Instance(models.Model):
-    text = 'Instance/Service'
-    sid = models.CharField(max_length=10) # SM7
-    instance_nr = models.CharField(max_length=2, blank=True, null=True) # 00
-    instance_type = models.ForeignKey(InstanceType) 
-    hosts = models.ManyToManyField(Host)
-    isSap = models.BooleanField(default=False)
-    
-    def admin_hosts(self):
-        return ', '.join([a.name for a in self.hosts.all()])
-    
-    admin_hosts.short_description = "Hosts"
-    
-    def __unicode__(self):
-        return self.sid
     
 class License(models.Model):
     text = 'License'
@@ -124,7 +92,41 @@ class HWU(models.Model):
     
     def __unicode__(self):
         return str(self.name)
-   
+
+class Host(models.Model):    
+    text = 'Server name'
+    name = models.CharField(max_length=20)  # e.g. evbyminsd1904
+    vn = models.CharField(max_length=1, null=True, blank=True)  # Virtual or Hard?
+    location = models.ForeignKey(Location, null=True, blank=True)  # e.g. K1-3
+    sbea = models.CharField(max_length=1, null=True, blank=True) # Y or N
+    pool = models.ForeignKey(ServerPool)
+    OS = models.ForeignKey(OS, null=True, blank=True)
+    RAM = models.IntegerField(default=0)  # in GB
+    HDD_all = models.IntegerField(default=0)  # in GB
+    HDD_occup = models.IntegerField(default=0)  # in GB
+    database = models.ForeignKey(Database, null=True, blank=True)
+    
+    
+    def __unicode__(self):
+        return self.name
+
+class Instance(models.Model):
+    text = 'Instance/Service'
+    sid = models.CharField(max_length=10) # SM7
+    instance_nr = models.CharField(max_length=2, blank=True, null=True) # 00
+    instance_type = models.ForeignKey(InstanceType) 
+    hosts = models.ManyToManyField(Host)
+    isSap = models.BooleanField(default=False)
+    
+    def admin_hosts(self):
+        return ', '.join([a.name for a in self.hosts.all()])
+    
+    admin_hosts.short_description = "Hosts"
+    
+    def __unicode__(self):
+        return self.sid
+    
+  
 class System(models.Model):
     name = models.CharField(max_length=30)  # e.g. evbyminsd1904_pi5
     isOnline = models.BooleanField(default=False)  # e.g. offline
