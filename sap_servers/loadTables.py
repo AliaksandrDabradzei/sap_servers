@@ -309,7 +309,7 @@ def load_instance():
         sids = sheet.cell(row, first_row.index('Instance/Service')).value.split(',')  # Server name
         inst_nr = str(sheet.cell(row, first_row.index('Number')).value)  # V/H
         inst_type = sheet.cell(row, first_row.index('Instance Type')).value
-        if len(inst_nr) == 1 : inst_type = '0'+inst_type
+        if len(inst_nr) == 1 : inst_type = '0' + inst_type
         host = sheet.cell(row, first_row.index('Server name')).value
         
         inst_type = InstanceType.objects.get(type=inst_type)
@@ -360,7 +360,7 @@ def load_system():
         sid = row_vals[first_row.index('Instance/Service')]
         systems['name'] = row_vals[first_row.index('Server name')]
         if sid != '':
-            systems['name'] += '_'+sid
+            systems['name'] += '_' + sid
         systems['isOnline'] = row_vals[first_row.index('Status')] == 'online'
         status = row_vals[first_row.index('Status')]
         systems['status'] = SystemStatus.objects.get(status=status)
@@ -394,7 +394,7 @@ def load_system():
                         clients=systems['clients'],
                         owner=systems['owner'],
                         license=systems['license'])
-                        #HWU=systems['HWU'])
+                        # HWU=systems['HWU'])
         system.save()
         
         systems['project'] = row_vals[first_row.index('Projects')]
@@ -407,7 +407,7 @@ def load_system():
             system.projects.add(project)
             inst = Instance.objects.get(sid=systems['inst'])
             system.instance.add(inst)
-            #prod = Product.objects.get(name=systems['prod'])
+            # prod = Product.objects.get(name=systems['prod'])
             
             for obj in systems['prod'].split(','):
                 obj = obj.strip()
@@ -425,21 +425,13 @@ def load_system():
                 system.HWU.add(hwu)
         except:
             print "error:", sys.exc_info()[0]
-            print 'project:', systems['project'], 'inst:', systems['inst'], 'prod:', systems['prod'], 'hwu:',systems['hwu'] 
+            print 'project:', systems['project'], 'inst:', systems['inst'], 'prod:', systems['prod'], 'hwu:', systems['hwu'] 
         
         
         
         
                     
     print 'Systems loading finished'
-
-                        
-                        
-                        
-                        
-        
-        
-
 
 def load_tables():
 #     load_oses()
@@ -456,7 +448,9 @@ def load_tables():
 #     load_owner()
 #     load_instance()
 #     load_hwu()
-    load_system()
+#     load_system()
     return
 
 load_tables()
+
+
