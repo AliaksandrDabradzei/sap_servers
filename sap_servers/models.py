@@ -1,9 +1,9 @@
 from django.db import models
 
 
-#---------------------------------
-# Information about Hosts
-#---------------------------------
+    #---------------------------------
+    # Information about Hosts
+    #---------------------------------
 
 class ServerPool(models.Model):
     text = 'Servers pool'

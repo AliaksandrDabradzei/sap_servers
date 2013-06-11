@@ -241,21 +241,21 @@ def load_land():
         if obj_class.objects.filter(name=row.name).count() > 1: row.delete()
     print text + ' loading finished'
     
-def load_status():
-    text = SystemStatus.text
-    obj_class = SystemStatus
-    print text + 's loading'
-    objs = list(set(sheet.col_values(first_row.index(text), 1)))  # list of uniqe Inst Types
-    obj_class.objects.all().delete() 
-
-    for obj in objs:
-        obj = obj.strip()
-        obj = obj_class(status=str(obj))
-        obj.save()
-            
-    for row in obj_class.objects.all():
-        if obj_class.objects.filter(status=row.status).count() > 1: row.delete()
-    print text + ' loading finished'
+# def load_status():
+#     text = SystemStatus.text
+#     obj_class = SystemStatus
+#     print text + 's loading'
+#     objs = list(set(sheet.col_values(first_row.index(text), 1)))  # list of uniqe Inst Types
+#     obj_class.objects.all().delete() 
+# 
+#     for obj in objs:
+#         obj = obj.strip()
+#         obj = obj_class(status=str(obj))
+#         obj.save()
+#             
+#     for row in obj_class.objects.all():
+#         if obj_class.objects.filter(status=row.status).count() > 1: row.delete()
+#     print text + ' loading finished'
 
 def load_license():
     text = License.text
@@ -363,7 +363,7 @@ def load_system():
             systems['name'] += '_' + sid
         systems['isOnline'] = row_vals[first_row.index('Status')] == 'online'
         status = row_vals[first_row.index('Status')]
-        systems['status'] = SystemStatus.objects.get(status=status)
+#         systems['status'] = SystemStatus.objects.get(status=status)
         landscape = row_vals[first_row.index('Landscape')]
         systems['landscape'] = Landscape.objects.get(name=landscape)
         systems['specification'] = row_vals[first_row.index('Specification')]
